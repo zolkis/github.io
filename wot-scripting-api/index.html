@@ -149,8 +149,8 @@
     <p>
       By <a>consuming a TD</a>, a client <a>Thing</a> creates a local runtime resource model that allows accessing the <a>Properties</a>, <a>Actions</a> and <a>Events</a> exposed by the server <a>Thing</a> on a remote device.
     </p>
-    <p>
-      Exposing a <a>Thing</a> requires
+    <div>
+      Exposing a <a>Thing</a> requires:
       <ul>
         <li>
           defining a <a>Thing Description</a> (TD),
@@ -162,9 +162,8 @@
            then eventually publishing the <a>Thing Description</a> (for instance to a <a>Thing Directory</a> directory for easier discovery).
         </li>
       </ul>
-
       This specification describes how to expose and consume <a>Thing</a>s by a script. Also, it defines a generic API for <a>Thing</a> discovery.
-    </p>
+    </div>
     <p class="note">
       Typically scripts are meant to be used on bridges or gateways that expose and control simpler devices as WoT <a>Thing</a>s and have means to handle (e.g. install, uninstall, update etc.) and run scripts.
     </p>
@@ -208,11 +207,6 @@
       <li>
         Create a local <a>Thing</a> to be exposed, based on a <a>Thing Description</a> provided in string serialized format, or out of an existing <a>Thing</a> object.
       </li>
-<!--
-  The add/remove use cases are being disputed, since add too much complexity to the spec.
-  The use cases can be solved by the use case above, edit the TD by other means,
-  then instantiate an ExposedThing.
--->
       <li>Add a <a>Property</a> definition to the <a>Thing</a>.</li>
       <li>Remove a <a>Property</a> definition from the <a>Thing</a>.</li>
       <li>Add an <a>Action</a> definition to the <a>Thing</a>.</li>
@@ -222,14 +216,6 @@
       <li>
         Emit a WoT <a>Event</a>, i.e. notify all subscribed listeners.
       </li>
-<!--
-      <li>
-        Provide notifications for <a>TD</a> changes to clients subscribed to that.
-        <p class="note">
-          This use case could be fulfilled by the <a>TD</a> specifying an event for TD change.
-        </p>
-      </li>
--->
       <li>Register service handlers for external requests:
         <ul>
           <li>to retrieve a <a>Property</a> value;</li>
@@ -329,7 +315,7 @@
           // ... additional checks possible on res.headers
           let td = await res.json();
           let thing = new ConsumedThing(td);
-          console.log("Thing name: " + thing.td.title);
+          console.log("Thing name: " + thing.getThingDescription().title);
         } catch (err) {
           console.log("Fetching TD failed", err.message);
         }
@@ -343,14 +329,14 @@
         [[WOT-TD]] for the properties that are not explicitly defined in a given
         <a>TD</a>.
       </p>
-      <p>
+      <div>
         To <dfn>expand a TD</dfn> given <var>td</var>, run the following steps:
         <ol>
           <li>
             For each item in the <a href="https://w3c.github.io/wot-thing-description/#sec-default-values">TD default values</a> table from [[!WOT-TD]], if the term is not defined in <a>td</a>, add the term definition with the default value specified in [[!WOT-TD]].
           </li>
         </ol>
-      </p>
+      </div>
     </section>
 
     <section> <h3>Validating a Thing Description</h3>
@@ -358,8 +344,9 @@
         The [[!WOT-TD]] specification defines how a <a>TD</a> should be validated.
         Therefore, this API expects the <a>ThingDescription</a> objects be validated before used as parameters. This specification defines a basic <a>TD</a> validation as follows.
       </p>
-      <p>
+      <div>
         To <dfn>validate a TD</dfn> given <var>td</var>, run the following steps:
+        <ol>
           <li>
             If <var>td</var> is not an object, throw <code>"TypeError"</code>
             and terminate these steps.
@@ -374,12 +361,11 @@
             If <a href="https://w3c.github.io/wot-thing-description/#json-schema-4-validation">JSON schema validation</a> fails on <var>td</var>, throw <code>"TypeError"</code> and terminate these steps.
           </li>
         </ol>
-      </p>
+      </div>
     </section>
   </section>
-</section>
 
-<section data-dfn-for="WOT">
+  <section data-dfn-for="WOT">
   <h2>The <dfn>WoT API object</dfn></h2>
   <p>
     Defines the API entry point exposed as a singleton and contains the API methods.
@@ -401,7 +387,7 @@
         Promise&lt;ConsumedThing&gt; consume(ThingDescription td);
       };
     </pre>
-    <p>
+    <div>
       Belongs to the <a>WoT Consumer</a> conformance class. Expects an <var>td</var> argument and returns a <a>Promise</a> that resolves with a <a>ConsumedThing</a> object that represents a client interface to operate with the <a>Thing</a>. The method MUST run the following steps:
       <ol>
         <li>
@@ -424,7 +410,7 @@
           Resolve <var>promise</var> with <var>thing</var>.
         </li>
       </ol>
-    </p>
+    </div>
   </section>
 
   <section> <h3>The <dfn>produce()</dfn> method</h3>
@@ -433,7 +419,7 @@
         Promise&lt;ExposedThing&gt; produce(ThingDescription td);
       };
     </pre>
-    <p>
+    <div>
       Belongs to the <a>WoT Producer</a> conformance class. Expects a <code>td</code> argument and returns a <a>Promise</a> that resolves with an <a>ExposedThing</a> object that extends <a>ConsumedThing</a> with a server interface, i.e. the ability to define request handlers. The method MUST run the following steps:
       <ol>
         <li>
@@ -446,25 +432,19 @@
           Let <var>thing</var> be a new <a>ExposedThing</a> object constructed with <var>td</var>.
         </li>
         <li>
-          Run the <a>validate a TD</a> steps on <var>td</var>. If that throws, reject <a>promise</a> with the error and terminate these steps.
-        </li>
-        <li>
-          Let <var>thing.td</var> be <var>td</var>.
-        </li>
-        <li>
           Resolve <var>promise</var> with <var>thing</var>.
         </li>
       </ol>
-    </p>
+    </div>
   </section>
 
   <section> <h3>The <dfn>discover()</dfn> method</h3>
     <pre class="idl">
       partial interface WOT {
-        ThingDiscovery discover(optional ThingFilter filter);
+        ThingDiscovery discover(optional ThingFilter filter = null);
       };
     </pre>
-    <p>
+    <div>
       Belongs to the <a>WoT Discovery</a> conformance class. Starts the discovery process that will provide <a>ThingDescription</a> objects for <a>Thing Description</a>s that match an optional <var>filter</var> argument. The method MUST run the following steps:
       <ol>
         <li>
@@ -480,7 +460,7 @@
           Return <var>discovery</var>.
         </li>
       </ol>
-    </p>
+    </div>
     <p>
       Refer to the <a>ThingDiscovery</a> section for how discovery should be implemented.
     </p>
@@ -495,20 +475,37 @@
       <a>WoT Consumer</a> conformance class.
     </p>
     <pre class="idl">
-      [Constructor(ThingDescription td), SecureContext, Exposed=(Window,Worker)]
+      [SecureContext, Exposed=(Window,Worker)]
       interface ConsumedThing {
-        Promise&lt;any&gt; readProperty(DOMString propertyName);
-        Promise&lt;object&gt; readAllProperties();
-        Promise&lt;object&gt; readMultipleProperties(sequence&lt;DOMString&gt; propertyNames);
-        Promise&lt;void&gt; writeProperty(DOMString propertyName, any value);
-        Promise&lt;void&gt; writeMultipleProperties(object valueMap);
-        Promise&lt;any&gt; invokeAction(DOMString actionName, optional any params);
-        Promise&lt;void&gt; observeProperty(DOMString name, WotListener listener);
+        constructor(ThingDescription td);
+        Promise&lt;any&gt; readProperty(DOMString propertyName,
+                                  optional InteractionOptions options = null);
+        Promise&lt;PropertyMap&gt; readAllProperties(optional InteractionOptions options = null);
+        Promise&lt;PropertyMap&gt; readMultipleProperties(
+                                  sequence&lt;DOMString&gt; propertyNames,
+                                  optional InteractionOptions options = null);
+        Promise&lt;void&gt; writeProperty(DOMString propertyName,
+                                    any value,
+                                    optional InteractionOptions options = null);
+        Promise&lt;void&gt; writeMultipleProperties(PropertyMap valueMap,
+                                    optional InteractionOptions options = null);
+        Promise&lt;any&gt; invokeAction(DOMString actionName,
+                                    optional any params = null,
+                                    optional InteractionOptions options = null);
+        Promise&lt;void&gt; observeProperty(DOMString name,
+                                    WotListener listener,
+                                    optional InteractionOptions options = null);
         Promise&lt;void&gt; unobserveProperty(DOMString name);
-        Promise&lt;void&gt; subscribeEvent(DOMString name, WotListener listener);
+        Promise&lt;void&gt; subscribeEvent(DOMString name,
+                                    WotListener listener,
+                                    optional InteractionOptions options = null);
         Promise&lt;void&gt; unsubscribeEvent(DOMString name);
-        readonly attribute ThingDescription td;
+        ThingDescription getThingDescription();
       };
+      dictionary InteractionOptions {
+        object uriVariables;
+      };
+      typedef object PropertyMap;
       callback WotListener = void(any data);
     </pre>
 
@@ -519,40 +516,58 @@
         <a>Thing Description</a> as a JSON object, one can create a
         <a>ConsumedThing</a> object.
       </p>
-      <p>
+      <div>
         To create <a>ConsumedThing</a> with the <a>ThingDescription</a>
         <var>td</var>, run the following steps:
         <ol>
           <li>
-            If <var>td</var> is not an object, throw <code>"TypeError"</code>
-            and terminate these steps.
+            Run the <a>expand a TD</a> steps on <var>td</var>. If that fails, re-throw the error and terminate these steps.
           </li>
           <li>
-            Run the <a>expand a TD</a> steps on <var>td</var>.
+            Let <var>thing</var> be a new <a>ConsumedThing</a> object.
           </li>
           <li>
-            Let <var>thing</var> be a new <a>ConsumedThing</a> object and
-            let <var>thing.td</var> be <var>td</var>.
+            Let ||td|| be an internal slot of <var>thing</var> and let <var>td</var> be its value.
           </li>
           <li>
             Return <var>thing</var>.
           </li>
         </ol>
+      </div>
+    </section>
+
+    <section>
+      <h3>The <dfn>getThingDescription()</dfn> method</h3>
+      <p>
+        Returns the internal slot ||td|| of the <a>ConsumedThing</a> object that represents the <a>Thing Description</a> of the <a>ConsumedThing</a>.
+        Applications may consult the <a>Thing</a> metadata stored in ||td|| in order to introspect its capabilities before interacting with it.
       </p>
     </section>
 
     <section>
-      <h3>The <dfn>td</dfn> property</h3>
+      <h3>The <dfn>InteractionOptions</dfn> dictionary</h3>
       <p>
-        Represents the <a>Thing Description</a> of the <a>ConsumedThing</a>.
-        Applications may consult the <a>Thing</a> metadata stored in <a>td</a> in order to introspect its capabilities before interacting with it.
+        Holds the interaction options that need to be exposed for application scripts according to the <a>Thing Description</a>. In this version of the specification only URI template variables are used, represented as <a href="https://infra.spec.whatwg.org/#parse-json-from-bytes">parsed JSON objects</a> defined in [[!WOT-TD]].
+      </p>
+      <p class="ednote">
+        The support for URI variables comes from the need exposed by [[WOT-TD]] to be able to describe existing <a>TD</a>s that use them, but it should be possible to write a <a>Thing Description</a> that would use <a>Action</a>s for representing the interactions that need URI variables and represent the URI variables as parameters to the <a>Action</a> and in that case that could be encapsulated by the implementations and the <var>options</var> parameter could be dismissed from the methods exposed by this API.
+      </p>
+    </section>
+
+    <section>
+      <h3>The <dfn>PropertyMap</dfn> type</h3>
+      <p>
+        Represents a map of <a>Property</a> names as strings to a value that the <a>Property</a> can take. It is used as a property bag for interactions that involve multiple <a>Properties</a> at once.
+      </p>
+      <p class="ednote">
+         It could be defined in Web IDL (as well as <a>ThingDescription</a>) as a <a href="https://heycam.github.io/webidl/#idl-maplike">maplike</a> interface from <i>string</i> to <i>any</i>.
       </p>
     </section>
 
     <section>
       <h3>The <dfn>readProperty()</dfn> method</h3>
-      <p>
-        Reads a <a>Property</a> value. Takes a string argument <var>propertyName</var> and returns a <a>Property</a> value represented as <code>any</code> type. The method MUST run the following steps:
+      <div>
+        Reads a <a>Property</a> value. Takes a string argument <var>propertyName</var> and and an optional <a>InteractionOptions</a> <var>options</var> argument. It returns a <a>Property</a> value represented as <code>any</code> type. The method MUST run the following steps:
         <ol>
           <li>
             Return a <a>Promise</a> <var>promise</var> and execute the next steps <a>in parallel</a>.
@@ -561,7 +576,7 @@
             If invoking this method is not allowed for the current scripting context for security reasons, reject <var>promise</var> with <code>SecurityError</code> and terminate these steps.
           </li>
           <li>
-            Make a request to the underlying platform (via the <a>Protocol Bindings</a>) to retrieve the value of the <a>Property</a> given by <var>propertyName</var>.
+            Make a request to the underlying platform (via the <a>Protocol Bindings</a>) to retrieve the value of the <a>Property</a> given by <var>propertyName</var> with optional URI templates given in <var>options.uriVariables</var>.
           </li>
           <li>
             If the request fails, reject <var>promise</var> with the error received from the <a>Protocol Bindings</a> and terminate these steps.
@@ -573,7 +588,7 @@
             Run the <dfn>validate Property value</dfn> sub-steps on <var>value</var>:
             <ol>
               <li>
-                Based on the <a href="https://w3c.github.io/wot-thing-description/#dataschema">DataSchema definition</a>, <var>value</var> MUST be a JSON value and comply to the data schema defined for the <a>Property</a> that is found in <code>this.td.properties[</code><var>propertyName</var><code>]</code>.
+                Based on the <a href="https://w3c.github.io/wot-thing-description/#dataschema">DataSchema definition</a>, <var>value</var> MUST be a JSON value and comply to the data schema defined for the <a>Property</a> that is found in <code>this.getThingDescription().properties[</code><var>propertyName</var><code>]</code>.
               </li>
               <li>
                 If this fails, throw <code>SyntaxError</code>, otherwise return <var>value</var>.
@@ -586,13 +601,13 @@
             Otherwise resolve <var>promise</var> with <var>value</var>.
           </li>
         </ol>
-      </p>
+      </div>
     </section>
 
     <section>
       <h3>The <dfn>readMultipleProperties()</dfn> method</h3>
-      <p>
-        Reads multiple <a>Property</a> values with one or multiple requests. Takes one argument, a sequence of strings <var>propertyNames</var> and returns an object with keys from <var>propertyNames</var> and values returned by this algorithm. The method MUST run the following steps:
+      <div>
+        Reads multiple <a>Property</a> values with one or multiple requests. Takes the <var>propertyNames</var> argument as a sequence of strings and an optional <a>InteractionOptions</a> <var>options</var> argument. It returns an object with keys from <var>propertyNames</var> and values returned by this algorithm. The method MUST run the following steps:
         <ol>
           <li>
             Return a <a>Promise</a> <var>promise</var> and execute the next steps <a>in parallel</a>.
@@ -604,7 +619,13 @@
             Let <var>result</var> be an object and for each string <var>name</var> in <var>propertyNames</var> add a property with key <var>name</var> and the value <code>null</code>.
           </li>
           <li>
-            Make a request to the underlying platform (via the <a>Protocol Bindings</a>) to retrieve the <a>Property</a> values given by <var>propertyNames</var>. If the <a>Protocol Bindings</a> support this using one request, use that, otherwise run the <a href="#the-readproperty-method">readProperty()</a> steps on each property name in <var>propertyNames</var> and store the resulting values in <var>result</var> for each <var>name</var> in <var>propertyNames</var>.
+            Make a request to the underlying platform (via the <a>Protocol Bindings</a>) to retrieve the <a>Property</a> values given by <var>propertyNames</var> with optional URI templates given in <var>options.uriVariables</var>.
+          </li>
+          <li>
+            If this cannot be done with a single request with the <a>Protocol Bindings</a> of the <a>Thing</a>, then reject <var>promise</var> with <code>NotSupportedError</code> and terminate these steps.
+          </li>
+          <li>
+            Process the reply and update all properties in <var>result</var> with the values obtained in the reply.
           </li>
           <li>
             If the above step fails at any point, reject <var>promise</var> with <code>SyntaxError</code> and terminate these steps.
@@ -613,31 +634,46 @@
             Resolve <var>promise</var> with <var>result</var>.
           </li>
         </ol>
-      </p>
+      </div>
     </section>
 
     <section>
       <h3>The <dfn>readAllProperties()</dfn> method</h3>
-      <p>
-        Reads all properties of the <a>Thing</a> with one or multiple requests. Takes no arguments. It returns an object with keys from <a>Property</a> names and values returned by this algorithm. The method MUST run the following steps:
+      <div>
+        Reads all properties of the <a>Thing</a> with one or multiple requests. Takes an optional <a>InteractionOptions</a> <var>options</var> argument. It returns an object with keys from <a>Property</a> names and values returned by this algorithm. The method MUST run the following steps:
         <ol>
           <li>
-            Let <var>propertyNames</var> be a sequence created from all the <a>Property</a> names of this <a>Thing</a> as found in <var>this.td.properties</var>.
+            Return a <a>Promise</a> <var>promise</var> and execute the next steps <a>in parallel</a>.
           </li>
           <li>
-            Let <var>result</var> be the result of running the <a href="#the-readmultipleproperties-method">readMultipleProperties()</a> steps on <var>propertyNames</var>. If that fails, reject <var>promise</var> with that error and terminate these steps.
+            If invoking this method is not allowed for the current scripting context for security reasons, reject <var>promise</var> with <code>SecurityError</code> and terminate these steps.
+          </li>
+          <li>
+            Let <var>result</var> be an object and for each string <var>name</var> in <var>propertyNames</var> add a property with key <var>name</var> and the value <code>null</code>.
+          </li>
+          <li>
+            Make a request to the underlying platform (via the <a>Protocol Bindings</a>) to retrieve the value of the all the <a>Property</a> definitions from the <a>TD</a> with optional URI templates given in <var>options.uriVariables</var>.
+          </li>
+          <li>
+            If this cannot be done with a single request with the <a>Protocol Bindings</a> of the <a>Thing</a>, then reject <var>promise</var> with <code>NotSupportedError</code> and terminate these steps.
+          </li>
+          <li>
+            If the request fails, reject <var>promise</var> with the error received from the <a>Protocol Bindings</a> and terminate these steps.
+          </li>
+          <li>
+            Process the reply and update all properties in <var>result</var> with the values obtained in the reply.
           </li>
           <li>
             Resolve <var>promise</var> with <var>result</var>.
           </li>
         </ol>
-      </p>
+      </div>
     </section>
 
     <section>
       <h3>The <dfn>writeProperty()</dfn> method</h3>
-      <p>
-        Writes a single <a>Property</a>. Takes a string argument <var>propertyName</var> and a value argument <var>value</var>. It returns success or failure. The method MUST run the following steps:
+      <div>
+        Writes a single <a>Property</a>. Takes a string argument <var>propertyName</var>, a value argument <var>value</var> and an optional <a>InteractionOptions</a> <var>options</var> argument. It returns success or failure. The method MUST run the following steps:
         <ol>
           <li>
             Return a <a>Promise</a> <var>promise</var> and execute the next steps <a>in parallel</a>.
@@ -649,7 +685,7 @@
             Run the <a>validate Property value</a> steps on <var>value</var>. If that fails, reject <a>promise</a> with <code>SyntaxError</code> and terminate these steps.
           </li>
           <li>
-            Make a request to the underlying platform (via the <a>Protocol Bindings</a>) to write <var>value</var> to the <a>Property</a> given by <var>propertyName</var>.
+            Make a request to the underlying platform (via the <a>Protocol Bindings</a>) to write <var>value</var> to the <a>Property</a> given by <var>propertyName</var> with optional URI templates given in <var>options.uriVariables</var>.
           </li>
           <li>
             If the request fails, reject <var>promise</var> with the error received from the <a>Protocol Bindings</a> and terminate these steps.
@@ -658,13 +694,13 @@
             Otherwise resolve <var>promise</var>.
           </li>
         </ol>
-      </p>
+      </div>
     </section>
 
     <section>
       <h3>The <dfn>writeMultipleProperties()</dfn> method</h3>
-      <p>
-        Writes a multiple <a>Property</a> values with one request. Takes one  argument, an object <var>properties</var> with keys as <a>Property</a> names and values as <a>Property</a> values. It returns success or failure. The method MUST run the following steps:
+      <div>
+        Writes a multiple <a>Property</a> values with one request. Takes a <var>properties</var> argument as an object with keys being <a>Property</a> names and values as <a>Property</a> values and an optional <a>InteractionOptions</a> <var>options</var> argument. It returns success or failure. The method MUST run the following steps:
         <ol>
           <li>
             Return a <a>Promise</a> <var>promise</var> and execute the next steps <a>in parallel</a>.
@@ -676,7 +712,10 @@
             For each key <var>name</var> on <var>properties</var>, take its value as <var>value</var> and run the <a>validate Property value</a> steps on <var>value</var>. If that fails in for any <var>name</var>, reject <a>promise</a> with <code>SyntaxError</code> and terminate these steps.
           </li>
           <li>
-            Make a single request to the underlying platform (via the <a>Protocol Bindings</a>) to write the each <a>Property</a> provided in <var>properties</var>. If this cannot be done with a single request with the <a>Protocol Bindings</a> of the <a>Thing</a>, then reject <var>promise</var> with <code>NotSupportedError</code> and terminate these steps.
+            Make a single request to the underlying platform (via the <a>Protocol Bindings</a>) to write the each <a>Property</a> provided in <var>properties</var> with optional URI templates given in <var>options.uriVariables</var>.
+          </li>
+          <li>
+            If this cannot be done with a single request with the <a>Protocol Bindings</a> of the <a>Thing</a>, then reject <var>promise</var> with <code>NotSupportedError</code> and terminate these steps.
           </li>
           <li>
             If the request fails, return the error received from the <a>Protocol Bindings</a> and terminate these steps.
@@ -685,7 +724,7 @@
             Otherwise resolve <var>promise</var>.
           </li>
         </ol>
-      </p>
+      </div>
     </section>
 
     <section>
@@ -698,9 +737,9 @@
 
     <section>
       <h3>The <dfn>observeProperty()</dfn> method</h3>
-      <p>
-        Makes a request for <a>Property</a> value change notifications. Takes a string argument <var>propertyName</var> and a <a>WotListener</a>
-        callback function <var>listener</var>. It returns success or failure.
+      <div>
+        Makes a request for <a>Property</a> value change notifications. Takes a string argument <var>propertyName</var>, a <a>WotListener</a>
+        callback function <var>listener</var> and an optional <a>InteractionOptions</a> <var>options</var> argument. It returns success or failure.
         The method MUST run the following steps:
         <ol>
           <li>
@@ -714,7 +753,7 @@
             with <code>"TypeError"</code> and terminate these steps.
           </li>
           <li>
-            Make a request to the underlying platform (via the <a>Protocol Bindings</a>) to observe <a>Property</a> identified by <var>propertyName</var>.
+            Make a request to the underlying platform (via the <a>Protocol Bindings</a>) to observe <a>Property</a> identified by <var>propertyName</var> with optional URI templates given in <var>options.uriVariables</var>.
           </li>
           <li>
             If the request fails, reject <var>promise</var> with the error received from the <a>Protocol Bindings</a> and terminate these steps.
@@ -735,13 +774,14 @@
             </ul>
           </li>
         </ol>
-      </p>
+      </div>
     </section>
 
     <section>
       <h3>The <dfn>unobserveProperty()</dfn> method</h3>
-      <p>
-        Makes a request for unsubscribing from <a>Property</a> value change notifications. Takes a string argument <var>propertyName</var> and returns success or failure. The method MUST run the following steps:
+      <div>
+        Makes a request for unsubscribing from <a>Property</a> value change notifications. Takes a string argument <var>propertyName</var> and
+        returns success or failure. The method MUST run the following steps:
         <ol>
           <li>
             Return a <a>Promise</a> <var>promise</var> and execute the next steps <a>in parallel</a>.
@@ -759,13 +799,13 @@
             Otherwise resolve <var>promise</var>.
           </li>
         </ol>
-      </p>
+      </div>
     </section>
 
     <section>
       <h3>The <dfn>invokeAction()</dfn> method</h3>
-      <p>
-        Makes a request for invoking an <a>Action</a> and return the result. Takes a string argument <var>actionName</var>, and an optional argument <var>parameters</var> of type <code>any</code>. It returns the result of the <a>Action</a> or an error. The method MUST run the following steps:
+      <div>
+        Makes a request for invoking an <a>Action</a> and return the result. Takes a string argument <var>actionName</var>, an optional argument <var>params</var> of type <code>any</code> and an optional <a>InteractionOptions</a> <var>options</var> argument. It returns the result of the <a>Action</a> or an error. The method MUST run the following steps:
         <ol>
           <li>
             Return a <a>Promise</a> <var>promise</var> and execute the next steps <a>in parallel</a>.
@@ -774,7 +814,7 @@
             If invoking this method is not allowed for the current scripting context for security reasons, reject <var>promise</var> with <code>SecurityError</code> and terminate these steps.
           </li>
           <li>
-            Make a request to the underlying platform (via the <a>Protocol Bindings</a>) to invoke the <a>Action</a> identified by <var>actionName</var> with parameters provided in <var>params</var>.
+            Make a request to the underlying platform (via the <a>Protocol Bindings</a>) to invoke the <a>Action</a> identified by <var>actionName</var> with parameters provided in <var>params</var> with optional URI templates given in <var>options.uriVariables</var>.
           </li>
           <li>
             If the request fails locally or returns an error over the network, reject <var>promise</var> with the error received from the <a>Protocol Bindings</a> and terminate these steps.
@@ -786,14 +826,14 @@
             Reject <var>promise</var> with <var>value</var>.
           </li>
         </ol>
-      </p>
+      </div>
     </section>
 
     <section>
       <h3>The <dfn>subscribeEvent()</dfn> method</h3>
-      <p>
-        Makes a request for subscribing to <a>Event</a> notifications. Takes a string argument <var>eventName</var> and a <a>WotListener</a>
-        callback function <var>listener</var>. It returns success or failure.
+      <div>
+        Makes a request for subscribing to <a>Event</a> notifications. Takes a string argument <var>eventName</var>, a <a>WotListener</a>
+        callback function <var>listener</var> and an optional <a>InteractionOptions</a> <var>options</var> argument. It returns success or failure.
         The method MUST run the following steps:
         <ol>
           <li>
@@ -807,7 +847,7 @@
             with <code>"TypeError"</code> and terminate these steps.
           </li>
           <li>
-            Make a request to the underlying platform (via the <a>Protocol Bindings</a>) to subscribe to an <a>Event</a> identified by <var>eventName</var>.
+            Make a request to the underlying platform (via the <a>Protocol Bindings</a>) to subscribe to an <a>Event</a> identified by <var>eventName</var>with optional URI templates given in <var>options.uriVariables</var>.
           </li>
           <li>
             If the request fails, reject <var>promise</var> with the error received from the <a>Protocol Bindings</a> and terminate these steps.
@@ -821,12 +861,12 @@
             as parameter.
           </li>
         </ol>
-      </p>
+      </div>
     </section>
 
     <section>
       <h3>The <dfn>unsubscribeEvent()</dfn> method</h3>
-      <p>
+      <div>
         Makes a request for unsubscribing from <a>Event</a> notifications. Takes a string argument <var>eventName</var> and returns success or failure. The method MUST run the following steps:
         <ol>
           <li>
@@ -845,7 +885,7 @@
             Otherwise resolve <var>promise</var>.
           </li>
         </ol>
-      </p>
+      </div>
     </section>
 
     <section>
@@ -858,7 +898,7 @@
           let res = await fetch("https://tds.mythings.org/sensor11");
           let td = res.json();
           let thing = new ConsumedThing(td);
-          console.log("Thing " + thing.td.title + " consumed.");
+          console.log("Thing " + thing.getThingDescription().title + " consumed.");
         } catch(e) {
           console.log("TD fetch error: " + e.message); },
         };
@@ -893,17 +933,23 @@
       The <a>ExposedThing</a> interface is the server API to operate the <a>Thing</a> that allows defining request handlers, <a>Property</a>, <a>Action</a>, and <a>Event</a> interactions.
     </p>
     <pre class="idl">
+      [SecureContext, Exposed=(Window,Worker)]
       interface ExposedThing: ConsumedThing {
-        ExposedThing setPropertyReadHandler(DOMString name, PropertyReadHandler readHandler);
-        ExposedThing setPropertyWriteHandler(DOMString name, PropertyWriteHandler writeHandler);
+        ExposedThing setPropertyReadHandler(DOMString name,
+                PropertyReadHandler readHandler);
+        ExposedThing setPropertyWriteHandler(DOMString name,
+                PropertyWriteHandler writeHandler);
         ExposedThing setActionHandler(DOMString name, ActionHandler action);
         void emitEvent(DOMString name, any data);
         Promise&lt;void&gt; expose();
         Promise&lt;void&gt; destroy();
       };
-      callback PropertyReadHandler = Promise&lt;any&gt;();
-      callback PropertyWriteHandler = Promise&lt;void&gt;(any value);
-      callback ActionHandler = Promise&lt;any&gt;(any parameters);
+      callback PropertyReadHandler = Promise&lt;any&gt;(
+              optional InteractionOptions options = null);
+      callback PropertyWriteHandler = Promise&lt;void&gt;(any value,
+              optional InteractionOptions options = null);
+      callback ActionHandler = Promise&lt;any&gt;(any params,
+              optional InteractionOptions options = null);
     </pre>
 
     <section>
@@ -915,11 +961,12 @@
       <p class="note">
          Note that an existing <a>ThingDescription</a> object can be optionally modified (for instance by adding or removing elements on its <var>properties</var>, <var>actions</var> and <var>events</var> internal properties) and the resulting object can used for constructing an
          <a>ExposedThing</a> object. This is the current way of adding and
-         removing <a>Property</a>, <a>Action</a> and <a>Event</a> definitions,
-         and later adding the service handler functions.
-         This is illustrated in the <a href="#exposedthing-examples">examples</a>.
+         removing <a>Property</a>, <a>Action</a> and <a>Event</a> definitions, as illustrated in the <a href="#exposedthing-examples">examples</a>.
       </p>
-      <p>
+      <p class="note">
+        Before invoking <a href="#dom-exposedthing-expose">expose()</a>, the <a>ExposedThing</a> object does not serve any requests. This allows first constructing <a>ExposedThing</a> and then initialize its <a>Properties</a> and service handlers before starting serving requests.
+      </p>
+      <div>
         To construct an <a>ExposedThing</a> with the <a>ThingDescription</a>
         <var>td</var>, run the following steps:
         <ol>
@@ -927,19 +974,30 @@
             If invoking this method is not allowed for the current scripting context for security reasons, throw <code>SecurityError</code> and terminate these steps.
           </li>
           <li>
-            If <var>td</var> is not a an object, throw <code>TypeError</code>
-            and terminate these steps.
+            Run the <a>expand a TD</a> steps on <var>td</var>. If that fails, re-throw the error and terminate these steps.
           </li>
           <li>
             Let <var>thing</var> be a new <a>ExposedThing</a> object.
           </li>
           <li>
-            Let <var>thing.td</var> be <var>td</var>. There is no validation or any transformation done on <var>td</var> at this stage.
+            Let ||td|| be an internal slot of <var>thing</var> and let <var>td</var> be its value.
           </li>
           <li>
             Return <var>thing</var>.
           </li>
         </ol>
+      </div>
+    </section>
+    <section>
+      <h3>Methods inherited from <a>ConsumedThing</a></h3>
+      <p>
+        The <code>readProperty()</code>, <code>readMultipleProperties()</code>, <code>readAllProperties()</code>, <code>writeProperty()</code>, <code>writeMultipleProperties()</code>, <code>writeAllProperties()</code> methods have the same algorithmic steps as described in <a href="#the-consumedthing-interface"><code>ConsumedThing</code></a>, with the difference that making a request to the underlying platform MAY be implemented with local methods or libraries and don't necessarily need to involve network operations.
+      </p>
+      <p>
+        The implementation of <a>ConsumedThing</a> interface in an <a>ExposedThing</a> provide the <i>default</i> methods to interact with the <a>ExposedThing</a>.
+      </p>
+      <p>
+        After constructing an <a>ExposedThing</a>, a script can initialize its <a>Properties</a> and can set up the optional read, write and action request handlers (the default ones are provided by the implementation). The script provided handlers MAY use the default handlers, thereby extending the default behavior, but they can also bypass them, overriding the default behavior. Finally, the script would call <a href="#the-expose-method"><code>expose()</code></a> on the <a>ExposedThing</a> in order to start serving external requests.
       </p>
     </section>
 
@@ -958,12 +1016,12 @@
          The <code>readHandler</code> callback function should implement reading a <a>Property</a> and SHOULD be called by implementations when a request for reading a <a>Property</a> is received from the underlying platform.
       </p>
       <p>
-        There MUST be at most one handler for any given <a>Property</a>, so newly added handlers MUST replace the previous handlers. If no handler is initialized for any given <a>Property</a>, implementations MAY implement a default property read handler based on the <a>Thing Description</a>.
+        There MUST be at most one handler for any given <a>Property</a>, so newly added handlers MUST replace the previous handlers. If no handler is initialized for any given <a>Property</a>, implementations SHOULD implement a default property read handler based on the <a>Thing Description</a>.
       </p>
     </section>
 
     <section> <h3>Handling <a>Property</a> read requests</h3>
-      <p>
+      <div>
         When a network request for reading <a>Property</a> <var>propertyName</var> is received by the implementation, run the following steps:
         <ol>
           <li>
@@ -979,21 +1037,22 @@
             if there is no default handler defined by the implementation, return <a>NotSupportedError</a> with the reply and terminate these steps.
           </li>
         </ol>
-      </p>
+      </div>
     </section>
 
     <section> <h3>Handling <a>Property</a> observe requests</h3>
-      <p>
+      <div>
         When a network request for observing a <a>Property</a> <var>propertyName</var> is received by the implementation, run the following steps:
         <ol>
           <li>
-            If a <a>Property</a> with <var>propertyName</var> does not exist, return <code>ReferenceError</code> in the reply and terminate these steps.
+            If a <a>Property</a> with <var>propertyName</var> does not exist, return an error in the reply (as defined in the
+            <a>Thing Description</a>) and terminate these steps.
           </li>
           <li>
             Save the request sender information to the <a>Property</a>'s <a>internal observer list</a> in order to be able to notify about <a>Property</a> value changes.
           </li>
         </ol>
-      </p>
+      </div>
     </section>
 
     <section data-dfn-for="PropertyWriteHandler">
@@ -1011,12 +1070,12 @@
         Takes <code>name</code> as string argument and <code>writeHandler</code> as argument of type <a>PropertyWriteHandler</a>. Sets the service handler  for writing the specified <a>Property</a> matched by <code>name</code>. Throws on error. Returns a reference to <var>this</var> object for supporting chaining.
       </p>
       <p>
-        There MUST be at most one write handler for any given <a>Property</a>, so newly added handlers MUST replace the previous handlers. If no write handler is initialized for any given <a>Property</a>, implementations MAY implement default property update and notifying observers on change, based on the <a>Thing Description</a>.
+        There MUST be at most one write handler for any given <a>Property</a>, so newly added handlers MUST replace the previous handlers. If no write handler is initialized for any given <a>Property</a>, implementations SHOULD implement default property update and notifying observers on change, based on the <a>Thing Description</a>.
       </p>
     </section>
 
     <section> <h3>Handling <a>Property</a> write requests</h3>
-      <p>
+      <div>
         When a network request for writing a <a>Property</a> <var>propertyName</var> with a new value <var>value</var> is received, implementations SHOULD run the following <dfn>update property steps</dfn>, given <var>propertyName</var>, <var>value</var> and <var>mode</var> set to <code>"single"</code>:
         <ol>
           <li>
@@ -1034,13 +1093,14 @@
               <li>
                 For each item stored in the <a>internal observer list</a> of the <a>Property</a> with <var>propertyName</var>, send an observe reply with the new value attached.
               </li>
+            </ol>
           </li>
           <li>
             If there is no handler to handle the request, return <a>NotSupportedError</a> in the reply and terminate these steps.
           </li>
         </ol>
-      </p>
-      <p>
+      </div>>
+      <div>
         When a network request for writing multiple <a>Properties</a> given in an object <var>propertyNames</var> is received, run the following steps:
         <ol>
           <li>
@@ -1049,13 +1109,18 @@
           <li>
             Reply to the request (by sending a single or multiple replies) according to the <a>Protocol Bindings</a> defined for the <a>Property</a>.
           </li>
-      </p>
+        </ol>
+      </div>
     </section>
 
     <section data-dfn-for="ActionHandler">
       <h3>The <dfn>ActionHandler</dfn> callback</h3>
       <p>
-        A function that is called when an external request for invoking an <a>Action</a> is received and defines what to do with such requests. It expects a <code>parameters</code> dictionary argument compiled by the implementation (based on the <a>Thing Description</a> and the external client request). It returns a <a>Promise</a> that rejects with an error or resolves if the action is successful.
+        A function that is called when an external request for invoking an
+        <a>Action</a> is received and defines what to do with such requests.
+        It is invoked with a <code>params</code> dictionary argument.
+        It returns a <a>Promise</a> that rejects with an error or resolves if
+        the action is successful.
       </p>
     </section>
 
@@ -1072,7 +1137,7 @@
     </section>
 
     <section> <h3>Handling <a>Action</a> requests</h3>
-      <p>
+      <div>
         When a network request for invoking the <a>Action</a> identified by <var>name</var> is received, the runtime SHOULD execute the following steps:
         <ol>
           <li>
@@ -1085,28 +1150,28 @@
             Otherwise return <a>NotSupportedError</a> with the reply and terminate these steps.
           </li>
         </ol>
-      </p>
+      </div>
     </section>
 
     <section> <h3>The <dfn>emitEvent()</dfn> method</h3>
-      <p>
+      <div>
         Takes <var>name</var> as string argument denoting an <a>Event</a> name, and a <var>data</var> argument of <code>any</code> type. The method MUST run the following steps:
         <ol>
           <li>
             If invoking this method is not allowed for the current scripting context for security reasons, throw <code>SecurityError</code> and terminate these steps.
           </li>
           <li>
-            If an <a>Event</a> with the name <var>name</var> is not found in <var>this.td.events</var>, throw <code>NotFoundError</code> and terminate these steps.
+            If an <a>Event</a> with the name <var>name</var> is not found in <var>this.getThingDescription().events</var>, throw <code>NotFoundError</code> and terminate these steps.
           </li>
           <li>
             Make a request to the underlying platform to send an <a>Event</a> with <var>data</var> attached as property, using the <a>Protocol Bindings</a>, then terminate these steps.
           </li>
         </ol>
-      </p>
+      </div>
     </section>
 
     <section> <h3>The <dfn>expose()</dfn> method</h3>
-      <p>
+      <div>
         Start serving external requests for the <a>Thing</a>, so that <a>WoT Interactions</a> using <a>Properties</a>, <a>Action</a>s and <a>Event</a>s will be possible. The method MUST run the following steps:
         <ol>
           <li>
@@ -1116,15 +1181,15 @@
             If invoking this method is not allowed for the current scripting context for security reasons, reject <var>promise</var> with <code>SecurityError</code> and terminate these steps.
           </li>
           <li>
-            Run the <a>expand a TD</a> steps on <var>this.td</var>.
+            Run the <a>expand a TD</a> steps on the internal slot ||td||.
           </li>
           <li>
-            Run the <a>validate a TD</a> on <var>this.td</var>. If that fails,
+            Run the <a>validate a TD</a> on ||td||. If that fails,
             reject <var>promise</var> with <code>"TypeError"</code> and terminate
             these steps.
           </li>
           <li>
-            For each <a>Property</a> definition in <var>this.instance.properties</var> initialize an <dfn>internal observer list</dfn> internal slot
+            For each <a>Property</a> definition in <var>this.instance.properties</var> initialize an |<dfn>internal observer list</dfn>| internal slot
             in order to store observe request data needed to notify the observers on value changes.
           </li>
           <li>
@@ -1139,11 +1204,11 @@
             Otherwise resolve <var>promise</var> and terminate these steps.
           </li>
         </ol>
-      </p>
+      </div>
     </section>
 
     <section> <h3>The <dfn>destroy()</dfn> method</h3>
-      <p>
+      <div>
         Stop serving external requests for the <a>Thing</a> and destroy the object. Note that eventual unregistering should be done before invoking this method. The method MUST run the following steps:
         <ol>
           <li>
@@ -1162,7 +1227,7 @@
             Otherwise resolve <var>promise</var> and terminate these steps.
           </li>
         </ol>
-      </p>
+      </div>
     </section>
 
     <section>
@@ -1196,16 +1261,14 @@
             }
           };
           let thing1 = await WOT.produce(tdFragment);
-          // TODO: add service handlers
+          // initialize Properties
+          await thing1.writeProperty("temperature", 0);
+          // add service handlers
+          thing1.setPropertyReadHandler("temperature", () => {
+             return readLocalTemperatureSensor();  // Promise
+          });
+          // start serving requests
           await thing1.expose();
-          // define Thing business logic
-          setInterval( async () => {
-            let mock = Math.random()*100;
-            let old = await thing1.readProperty("temperature");
-            if (old < mock) {
-              await thing1.writeProperty("temperature", mock);
-            }
-          }, 1000);
         } catch (err) {
            console.log("Error creating ExposedThing: " + err);
         }
@@ -1276,8 +1339,9 @@
       The <a>ThingDiscovery</a> object is constructed given a filter and provides the properties and methods controlling the discovery process.
     </p>
     <pre class="idl">
-      [Constructor(optional ThingFilter filter), SecureContext, Exposed=(Window,Worker)]
+      [SecureContext, Exposed=(Window,Worker)]
       interface ThingDiscovery {
+        constructor(optional ThingFilter filter = null);
         readonly attribute ThingFilter? filter;
         readonly attribute boolean active;
         readonly attribute boolean done;
@@ -1287,6 +1351,9 @@
         void stop();
       };
     </pre>
+    <p class="ednote">
+      The <a>ThingDiscovery</a> interface has a <code>next()</code> method and a <code>done</code> property, but it is not an <a href="">Iterable</a>. Look into <a href="https://github.com/w3c/wot-scripting-api/issues/177">Issue 177</a> for rationale.
+    </p>
     <p>
       The <dfn>discovery results</dfn> internal slot is an internal queue for temporarily storing the found <a>ThingDescription</a> objects until they are consumed by the application using the <a href="the-next-method">next()</a> method. Implementations MAY optimize the size of this queue based on e.g. the available resources and the frequency of invoking the <a href="the-next-method">next()</a> method.
     </p>
@@ -1304,7 +1371,7 @@
     </p>
 
     <section><h3>Constructing <code>ThingDiscovery</code></h3>
-      <p>
+      <div>
         To create <a>ThingDiscovery</a> with the <a>ThingFilter</a>
         <var>filter</var>, run the following steps:
         <ol>
@@ -1325,7 +1392,7 @@
             Return <var>discovery</var>.
           </li>
         </ol>
-      </p>
+      </div>
       <p>
         The <a href="the-start-method">start()</a> method sets <a href="#dom-thingdiscovery-active">active</a> to <code>true</code>. The <a href="the-stop-method">stop()</a> method sets <a href="#dom-thingdiscovery-active">active</a> to <var>false</var>, but <a href="#dom-thingdiscovery-done">done</a> may be still <code>false</code> if there are <a>ThingDescription</a> objects in the <a>discovery results</a> not yet consumed with <a href="the-next-method">next()</a>.
       </p>
@@ -1385,7 +1452,7 @@
 
     <section>
       <h3>The <dfn>start()</dfn> method</h3>
-      <p>
+      <div>
         Starts the discovery process. The method MUST run the following steps:
         <ol>
           <li>
@@ -1466,12 +1533,12 @@
             When the underlying platform reports the discovery process has completed, set <var>this.active</var> to <code>false</code>.
           </li>
         </ol>
-      </p>
+      </div>
     </section>
 
     <section>
       <h3>The <dfn>next()</dfn> method</h3>
-      <p>
+      <div>
         Provides the next discovered <a>ThingDescription</a> object. The method MUST run the following steps:
         <ol>
           <li>
@@ -1490,12 +1557,12 @@
             Resolve <var>promise</var> with <var>td</var> and terminate these steps.
           </li>
         </ol>
-      </p>
+      </div>
     </section>
 
     <section>
       <h3>The <dfn>stop()</dfn> method</h3>
-      <p>
+      <div>
         Stops or suppresses the discovery process. It might not be supported by all discovery methods and endpoints, however, any further discovery results or errors will be discarded and the discovery is marked inactive. The method MUST run the following steps:
         <ol>
           <li>
@@ -1505,7 +1572,7 @@
             Set <code>this.active</code> to <code>false</code>.
           </li>
         </ol>
-      </p>
+      </div>
     </section>
 
     <section>
@@ -1519,7 +1586,7 @@
           let td = await discovery.next();
           console.log("Found Thing Description for " + td.title);
           let thing = new ConsumedThing(td);
-          console.log("Thing name: " + thing.td.title);
+          console.log("Thing name: " + thing.getThingDescription().title);
         } while (!discovery.done);
       </pre>
       <p>
@@ -1540,7 +1607,7 @@
           let td = await discovery.next();
           console.log("Found Thing Description for " + td.title);
           let thing = new ConsumedThing(td);
-          console.log("Thing name: " + thing.td.title);
+          console.log("Thing name: " + thing.getThingDescription().title);
         } while (!discovery.done);
         if (discovery.error) {
           console.log("Discovery stopped because of an error: " + error.message);
@@ -1559,7 +1626,7 @@
         do {
           let td = await discovery.next();
           let thing = new ConsumedThing(td);
-          console.log("Thing name: " + thing.td.title);
+          console.log("Thing name: " + thing.getThingDescription().title);
         } while (!discovery.done);
       </pre>
     </section> <!-- Examples -->
@@ -1579,7 +1646,7 @@
       Following these practices does not guarantee security,
       but it might help avoid common known vulnerabilities.
     </p>
-    <p>
+    <div>
       The WoT security risks and possible mitigations are concerning the following groups:
       <ul>
         <li>
@@ -1600,7 +1667,7 @@
           informative recommendations concerning security.
         </li>
       </ul>
-    </p>
+    </div>
 
     <section id="sec-security-consideration-runtime">
       <h3>Scripting Runtime Security and Privacy Risks</h3>
@@ -1913,7 +1980,7 @@
       </p>
     </section>
     <section> <h4>Using Events</h4>
-      <p>
+      <div>
         This API ended up not using software events at all, for the following
         reasons:
         <ul>
@@ -1927,7 +1994,7 @@
             Observing <a>Property</a> changes and handling WoT <a>Event</a>s is done with the solution above.
           </li>
         </ul>
-      </p>
+      </div>
     </section>
     <section> <h4>Polymorphic functions</h4>
       <p>
@@ -1937,7 +2004,7 @@
   </section>
 
   <section class="appendix" id="Changes"><h2>Changes</h2>
-    <p>
+    <div>
       The following is a list of major changes to the document. Major versions of this specification are the following:
       <ul>
         <li>
@@ -1976,16 +2043,15 @@
           </ul>
         </li>
       </ul>
-    </p>
+    </div>
     <p>
       For a complete list of changes, see the <a href="https://github.com/w3c/wot-scripting-api/commits/master">github change log</a>. You can also view the <a href="https://github.com/w3c/wot-scripting-api/issues?page=1&amp;state=closed">recently closed issues</a>.
     </p>
   </section>
 
   <section> <h3 class="appendix" id="openissues">Open issues</h3>
-    <p>
+    <div>
       The following problems are being discussed and need most attention:
-    </p>
       <ul>
         <li>
           Script management and runtime related issues (https://github.com/w3c/wot-scripting-api/issues/)
@@ -1994,6 +2060,7 @@
           An explicit API for adding and removing <a>Property</a>, <a>Action</a> and <a>Event</a> definitions on <a>ExposedThing</a> (it was present in earlier versions, but removed for complexity and a simpler way to do it.
         </li>
       </ul>
+    </div>
   </section>
 
 <section class="appendix" id="idl-index"> <h3>Full Web IDL</h3>
