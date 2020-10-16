@@ -1071,8 +1071,6 @@
       a certain amount of time, then you time out.
     </p>
     <pre class="example">
-      const ndef = navigator.nfc.ndef;
-
       function write(data, { timeout } = {}) {
         return new Promise((resolve, reject) => {
           const ctlr = new AbortController();
@@ -1081,7 +1079,7 @@
             setTimeout(() => ctlr.abort(), timeout);
           }
 
-          ndef.addEventListener("tagfound", event => {
+          navigator.nfc.addEventListener("tagfound", event => {
             navigator.nfc.ndef.write(data, { signal: ctlr.signal })
               .then(resolve, reject);
           }, { once: true });
@@ -1101,7 +1099,7 @@
 
   <section> <h3>Handle scanning errors</h3>
     <p>
-      This example shows what happens when |navigator.nfc.onerror| is fired.
+      This example shows what happens when `navigator.nfc.onerror` is fired.
     </p>
     <pre class="example">
       navigator.nfc.start().then(() => {
@@ -1491,7 +1489,7 @@
     </pre>
     <pre class="example">
       await navigator.nfc.start();
-      navigator.nfc.ndef.ontagfound = event => {
+      navigator.nfc.ontagfound = event => {
         const message = await navigator.nfc.ndef.read();
         const shoppingItemRecord = message.records[0];
         if (!shoppingItemRecord ||
@@ -1988,14 +1986,14 @@
     The <dfn>NFCTagFoundEvent</dfn> is the event being dispatched when an
     <a>NFC tag</a> appears in NFC proximity range.
   </p>
-  <p>
-    The <dfn>serialNumber</dfn> property represents the serial number of
-    the device used for anti-collision and identification, or empty string in
-    case none is available.
+  <p data-dfn-for="NFCTagFoundEvent">
+    The <dfn>serialNumber</dfn> property represents the 
+    serial number of the device used for anti-collision and identification, 
+    or empty string in case none is available.
   </p>
-  <p data-dfn-for="NFCTagFoundEventInit">
+  <p data-dfn-for="NFCTagFoundEvent">
     <dfn>NFCTagFoundEventInit</dfn> is used to initialize a new event with a
-    serial number. If <dfn>serialNumber</dfn> is not present or is `null`,
+    serial number. If {{NFCTagFoundEvent/serialNumber}} is not present or is `null`,
     empty string will be used to init the event.
   </p>
   <p class="note">
@@ -2020,30 +2018,22 @@
      </tr>
     </thead>
     <tbody>
-     <tr>
-       <td><dfn>[[\Suspended]]</dfn></td>
-       <td>`false`</td>
-       <td>
-         A boolean flag indicating whether NFC functionality is
-         <a href="#nfc-suspended">suspended</a> or not, initially
-         `false`.
-       </td>
-     </tr>
-     <tr>
-       <td><dfn>[[\PollingActive]]</dfn></td>
-       <td>`false`</td>
-       <td>
-         Set to `true` when NFC polling is active, to `false` otherwise when
-         it is not active and to `undefined` when {{NFC/start()}} has been invoked
-         but its {{Promise}} is not yet settled.
-       </td>
-     </tr>
-     <tr>
       <tr>
-        <td><dfn>[[\PollingAbortSignal]]</dfn></td>
-        <td>`undefined`</td>
+        <td><dfn>[[\Suspended]]</dfn></td>
+        <td>`false`</td>
         <td>
-          The {{NFCOptions}}.signal to abort the operation.
+          A boolean flag indicating whether NFC functionality is
+          <a href="#nfc-suspended">suspended</a> or not, initially
+          `false`.
+        </td>
+      </tr>
+      <tr>
+        <td><dfn>[[\PollingActive]]</dfn></td>
+        <td>`false`</td>
+        <td>
+          Set to `true` when NFC polling is active, to `false` otherwise when
+          it is not active and to `undefined` when {{NFC/start()}} has been invoked
+          but its {{Promise}} is not yet settled.
         </td>
       </tr>
     </tbody>
@@ -2052,6 +2042,14 @@
     Internal slots are used only as a notation in this specification, and
     implementations do not necessarily have to map them to explicit internal
     properties.
+  </p>
+  <p>
+    <dfn id="nfc-is-active">NFC polling is active</dfn> if the
+    <a>[[\PollingActive]]</a> internal slot is not `false`.
+  </p>
+  <p>
+    <dfn id="nfc-is-active">NFC polling is inactive</dfn> if the
+    <a>[[\PollingActive]]</a> internal slot is `false`.
   </p>
   <p>
     <dfn id="nfc-is-suspended">NFC is suspended</dfn> if the
@@ -2177,33 +2175,26 @@
           Return |p| and run the next steps <a>in parallel</a>.
         </li>
         <li>
-          If |navigator.nfc|.<a>[[\PollingActive]]</a> is not `false`, 
-          attempt to <a>abort NFC polling</a>.
+          If <a>NFC polling is active</a>, attempt to <a>abort NFC polling</a>.
         </li>
         <li>
-          Set |navigator.nfc|.<a>[[\PollingActive]]</a> to `undefined`.
+          Set <a>[[\PollingActive]]</a> to `undefined`.
         </li>
         <li>
           Let |options| be first argument.
         </li>
         <li>
-          [= list/For each =] |key| → |value| of |options|:
-          <ol>
-            <li>
-              If |key| equals "`signal`" and |value| is not `undefined`, set
-              |navigator.nfc|.<a>[[\PollingAbortSignal]]</a> to |value|.
-            </li>
-          </ol>
+          Let |signal:AbortSignal| be the |options|’ dictionary member
+          of the same name if present, or `null` otherwise.
         </li>
         <li>
-          If |navigator.nfc|.<a>[[\PollingAbortSignal]]</a>'s
-          [= AbortSignal/aborted flag =] is set, then reject |p| with a
-          {{"AbortError"}} {{DOMException}} and abort these steps.
+          If |signal|’s [= AbortSignal/aborted flag =] is set, then reject |p|
+          with an {{"AbortError"}} {{DOMException}} and return |p|.
         </li>
         <li>
-          If |navigator.nfc|.<a>[[\PollingAbortSignal]]</a> is not `null`, then
+          If |signal| is not `null`, then
           <a data-cite="dom#abortsignal-abort-algorithms">add the following
-          abort steps</a> to |navigator.nfc|.<a>[[\PollingAbortSignal]]</a>:
+          abort steps</a> to |signal|:
           <ol>
             <li>
               Attempt to <a>abort NFC polling</a>.
@@ -2239,7 +2230,7 @@
           in the <a>abort NFC polling</a> steps.
         </li>
         <li>
-          Set |navigator.nfc|.<a>[[\PollingActive]]</a> to `true`.
+          Set [[\PollingActive]]</a> to `true`.
         </li>
         <li>
           Resolve |p|.
@@ -2268,7 +2259,7 @@
         </li>
         <li>
           <a>Fire an event</a> named "`tagfound`" at |navigator.nfc| using
-          <a>NFCTagFoundEvent</a> with its <a>serialNumber</a>
+          <a>NFCTagFoundEvent</a> with its {{NFCTagFoundEvent/serialNumber}}
           attribute initialized to |serialNumber|.
         </li>
         <li>
@@ -2290,10 +2281,7 @@
           <a>NFC adapter</a>s in the <a>active adapter list</a>
         </li>
         <li>
-          Set |navigator.nfc|.<a>[[\PollingActive]]</a> to `false`.
-        </li>
-        <li>
-          Set |navigator.nfc|.<a>[[\PollingAbortSignal]]</a> to `null`.
+          Set <a>[[\PollingActive]]</a> to `false`.
         </li>
       </ol>
     </section>
@@ -2503,8 +2491,8 @@
             and abort these steps.
           </li>
           <li>
-            Let |startPolling:boolean| be `true` if
-            |navigator.nfc|.<a>[[\PollingActive]]</a> is `false` and otherwise `false`.
+            Let |startPolling:boolean| be `true` if <a>NFC polling is inactive</a> 
+            and otherwise to `false`.
             <p class="note">
               Writing will temporarily <a>start NFC polling</a> if that is not
               active, until the first writing is done, when the temporary polling is
@@ -3559,8 +3547,8 @@
             and abort these steps.
           </li>
           <li>
-            Let |startPolling:boolean| be `true` if
-            |navigator.nfc|.<a>[[\PollingActive]]</a> is `false` and otherwise `false`.
+            Let |startPolling:boolean| be `true` if <a>NFC polling is inactive</a> 
+            and otherwise to `false`.
             <p class="note">
               Reading will temporarily <a>start NFC polling</a> if that is not
               active, until the first reading is done, when the temporary polling is
@@ -3581,7 +3569,8 @@
           </li>
           <li>
             If |startPolling| is `true`, <a>start NFC polling</a>.
-            If that fails, reject |p| and abort these steps.
+            If that fails, reject |p| with a {{"NotReadableError"}} {{DOMException}} and abort 
+            these steps.
           </li>
           <li>
             Let |reader:NDEFReader| be the |navigator.nfc.ndef| instance.
@@ -3590,22 +3579,17 @@
             Let |options| be first argument.
           </li>
           <li>
-            [= list/For each =] |key| → |value| of |options|:
-            <ol>
-              <li>
-                If |key| equals "`signal`" and |value| is not `undefined`, set
-                |reader|.<a>[[\PollingAbortSignal]]</a> to |value|.
-              </li>
-            </ol>
+            Let |signal:AbortSignal| be the |options|’ dictionary member
+            of the same name if present, or `null` otherwise.
           </li>
           <li>
-            If |reader|.<a>[[\PollingAbortSignal]]</a>'s [= AbortSignal/aborted flag =] is
+            If |signal|'s [= AbortSignal/aborted flag =] is
             set, then reject |p| with a {{"AbortError"}} {{DOMException}}.
           </li>
           <li>
-            If |reader|.<a>[[\PollingAbortSignal]]</a> is not `null`, then
+            If |signal| is not `null`, then
             <a data-cite="dom#abortsignal-abort-algorithms">add the following
-            abort steps</a> to |reader|.<a>[[\PollingAbortSignal]]</a>:
+            abort steps</a> to |signal|:
             <ol>
               <li>
                 Attempt to <a>abort a pending read</a> on |reader|.
